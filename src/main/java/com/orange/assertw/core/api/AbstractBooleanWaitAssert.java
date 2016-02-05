@@ -9,11 +9,11 @@ import com.jayway.awaitility.Awaitility;
  * 
  * @author Achraf LAHMOURATE
  */
-public abstract class AbstractWaitBooleanAssert<S extends AbstractWaitBooleanAssert<S>> extends WaitAssert<S, Boolean> {
+public abstract class AbstractBooleanWaitAssert<S extends AbstractBooleanWaitAssert<S>> extends AbstractWaitAssert<S, Boolean> {
 
 	Booleans booleans = Booleans.instance();
 
-	protected AbstractWaitBooleanAssert(Boolean actual, Class<?> selfType) {
+	protected AbstractBooleanWaitAssert(Boolean actual, Class<?> selfType) {
 		super(actual, selfType);
 	}
 
