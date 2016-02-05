@@ -6,24 +6,27 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.jayway.awaitility.Awaitility;
 
-public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
+public class WaitAssert<S extends WaitAssert<S, A>, A> extends AbstractAssert<S, A> {
 
-	private long timeout;
-	private TimeUnit unit;
+	protected long timeout = 5;
+	protected TimeUnit unit = TimeUnit.SECONDS;
 
-	protected WaitAssert(S actual, Class<?> selfType, long timeout, TimeUnit unit) {
+	protected WaitAssert(A actual, Class<?> selfType, long timeout, TimeUnit unit) {
 		super(actual, selfType);
 		this.timeout = timeout;
 		this.unit = unit;
 	}
 
-	protected WaitAssert(S actual, Class<?> selfType, long timeout) {
+	protected WaitAssert(A actual, Class<?> selfType, long timeout) {
 		super(actual, selfType);
 		this.timeout = timeout;
-		this.unit = TimeUnit.SECONDS;
 	}
 
-	public WaitAssert<S> isEqualTo(Object expected) {
+	protected WaitAssert(A actual, Class<?> selfType) {
+		super(actual, selfType);
+	}
+
+	public S isEqualTo(Object expected) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isEqualTo(expected));
 		return myself;
 	}
@@ -50,7 +53,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is equal to the given one.
 	 */
-	public WaitAssert<S> isNotEqualTo(Object other) {
+	public S isNotEqualTo(Object other) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotEqualTo(other));
 		return myself;
 	}
@@ -98,7 +101,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is {@code null}.
 	 */
-	public WaitAssert<S> isNotNull() {
+	public S isNotNull() {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotNull());
 		return myself;
 	}
@@ -129,7 +132,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is not the same as the given one.
 	 */
-	public WaitAssert<S> isSameAs(Object expected) {
+	public S isSameAs(Object expected) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isSameAs(expected));
 		return myself;
 	}
@@ -160,7 +163,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is the same as the given one.
 	 */
-	public WaitAssert<S> isNotSameAs(Object other) {
+	public S isNotSameAs(Object other) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotSameAs(other));
 		return myself;
 	}
@@ -190,7 +193,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is not present in the given array.
 	 */
-	public WaitAssert<S> isIn(Object... values) {
+	public S isIn(Object... values) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isIn(values));
 		return myself;
 	}
@@ -221,7 +224,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is present in the given array.
 	 */
-	public WaitAssert<S> isNotIn(Object... values) {
+	public S isNotIn(Object... values) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotIn(values));
 		return myself;
 	}
@@ -251,7 +254,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is not present in the given collection.
 	 */
-	public WaitAssert<S> isIn(Iterable<?> values) {
+	public S isIn(Iterable<?> values) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isIn(values));
 		return myself;
 	}
@@ -281,7 +284,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is present in the given collection.
 	 */
-	public WaitAssert<S> isNotIn(Iterable<?> values) {
+	public S isNotIn(Iterable<?> values) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotIn(values));
 		return myself;
 	}
@@ -313,7 +316,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is not an instance of the given type.
 	 */
-	public WaitAssert<S> isInstanceOf(Class<?> type) {
+	public S isInstanceOf(Class<?> type) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isInstanceOf(type));
 		return myself;
 	}
@@ -348,7 +351,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given array of types contains {@code null}s.
 	 */
-	public WaitAssert<S> isInstanceOfAny(Class<?>... types) {
+	public S isInstanceOfAny(Class<?>... types) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isInstanceOfAny(types));
 		return myself;
 	}
@@ -380,7 +383,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if the actual value is an instance of the given type.
 	 */
-	public WaitAssert<S> isNotInstanceOf(Class<?> type) {
+	public S isNotInstanceOf(Class<?> type) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotInstanceOf(type));
 		return myself;
 	}
@@ -415,7 +418,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given array of types contains {@code null}s.
 	 */
-	public WaitAssert<S> isNotInstanceOfAny(Class<?>... types) {
+	public S isNotInstanceOfAny(Class<?>... types) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotInstanceOfAny(types));
 		return myself;
 	}
@@ -447,7 +450,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given object is null.
 	 */
-	public WaitAssert<S> hasSameClassAs(Object other) {
+	public S hasSameClassAs(Object other) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.hasSameClassAs(other));
 		return myself;
 	}
@@ -476,7 +479,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws AssertionError
 	 *             if actual is {@code null}.
 	 */
-	public WaitAssert<S> hasToString(String expectedToString) {
+	public S hasToString(String expectedToString) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.hasToString(expectedToString));
 		return myself;
 	}
@@ -509,7 +512,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given object is null.
 	 */
-	public WaitAssert<S> doesNotHaveSameClassAs(Object other) {
+	public S doesNotHaveSameClassAs(Object other) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.doesNotHaveSameClassAs(other));
 		return myself;
 	}
@@ -544,7 +547,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given object is null.
 	 */
-	public WaitAssert<S> isExactlyInstanceOf(Class<?> type) {
+	public S isExactlyInstanceOf(Class<?> type) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isExactlyInstanceOf(type));
 		return myself;
 
@@ -579,7 +582,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given object is null.
 	 */
-	public WaitAssert<S> isNotExactlyInstanceOf(Class<?> type) {
+	public S isNotExactlyInstanceOf(Class<?> type) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotExactlyInstanceOf(type));
 		return myself;
 	}
@@ -610,7 +613,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given types is null.
 	 */
-	public WaitAssert<S> isOfAnyClassIn(Class<?>... types) {
+	public S isOfAnyClassIn(Class<?>... types) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isOfAnyClassIn(types));
 		return myself;
 	}
@@ -641,7 +644,7 @@ public class WaitAssert<S> extends AbstractAssert<WaitAssert<S>, S> {
 	 * @throws NullPointerException
 	 *             if the given types is null.
 	 */
-	public WaitAssert<S> isNotOfAnyClassIn(Class<?>... types) {
+	public S isNotOfAnyClassIn(Class<?>... types) {
 		Awaitility.await().atMost(timeout, unit).until(() -> super.isNotOfAnyClassIn(types));
 		return myself;
 	}
