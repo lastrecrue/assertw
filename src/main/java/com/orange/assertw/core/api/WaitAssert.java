@@ -1,4 +1,4 @@
-package org.assertw.core.api;
+package com.orange.assertw.core.api;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,19 +11,18 @@ public class WaitAssert<S extends WaitAssert<S, A>, A> extends AbstractAssert<S,
 	protected long timeout = 5;
 	protected TimeUnit unit = TimeUnit.SECONDS;
 
-	protected WaitAssert(A actual, Class<?> selfType, long timeout, TimeUnit unit) {
-		super(actual, selfType);
-		this.timeout = timeout;
-		this.unit = unit;
-	}
-
-	protected WaitAssert(A actual, Class<?> selfType, long timeout) {
-		super(actual, selfType);
-		this.timeout = timeout;
-	}
-
 	protected WaitAssert(A actual, Class<?> selfType) {
 		super(actual, selfType);
+	}
+
+	public S atMost(long timeout) {
+		this.timeout = timeout;
+		return myself;
+	}
+
+	public void atMost(long timeout, TimeUnit unit) {
+		this.timeout = timeout;
+		this.unit = unit;
 	}
 
 	public S isEqualTo(Object expected) {

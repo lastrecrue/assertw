@@ -1,4 +1,4 @@
-package org.assertw.core.api;
+package com.orange.assertw.core.api;
 
 public class WaitAssertions {
 
