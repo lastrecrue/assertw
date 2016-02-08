@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class WaitAssertTest {
 
-	@Test()
+	@Test
 	public void testBooleanSimple() {
 		WaitAssertions.assertThat(true).as("coucou").isEqualTo(false);
 	}	
