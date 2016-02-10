@@ -24,8 +24,14 @@ public class WaitAssertTest {
 	}
 
 	@Test
-	public void testCollectionsTrue() {
+	public void testCollectionContain() {
 		WaitAssertions.assertThats(() -> listStrings()).atMost(5).contains("a","b","c");
+
+	}
+	
+	@Test
+	public void testCollectionContainOnly() {
+		WaitAssertions.assertThats(() -> listStrings()).atMost(5).containsOnly("a","b","c");
 
 	}
 	

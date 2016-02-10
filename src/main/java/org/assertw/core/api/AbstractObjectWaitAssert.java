@@ -1,6 +1,5 @@
 package org.assertw.core.api;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -11,7 +10,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.assertj.core.api.AbstractAssert;
 
 /**
  * .
@@ -19,7 +17,12 @@ import org.assertj.core.api.AbstractAssert;
  * @author LAHMOURATE Achraf
  * 
  */
-public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAssert<S>> extends AbstractAssert<S, Callable<?>> {
+public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAssert<S>>
+		extends AbstractWaitAssert<S, Callable<Object>, Object> {
+
+	protected AbstractObjectWaitAssert(Callable<Object> actual, Class<?> selfType) {
+		super(actual, selfType);
+	}
 
 	static final Logger logger = LogManager.getLogger(AbstractObjectWaitAssert.class.getName());
 
@@ -29,11 +32,9 @@ public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAsser
 	protected long pollInterval = 1;
 	protected TimeUnit pollUnit = TimeUnit.SECONDS;
 
-	private final ExecutorService executor = Executors.newFixedThreadPool(1);
+	private Object call;
 
-	protected AbstractObjectWaitAssert(Callable<?> actual, Class<?> selfType) {
-		super(actual, selfType);
-	}
+	private final ExecutorService executor = Executors.newFixedThreadPool(1);
 
 	public S atMost(long timeout) {
 		this.timeout = timeout;
@@ -52,7 +53,31 @@ public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAsser
 	}
 
 	public S isEqualTo(final Object expected) {
-		TaskObject task = new TaskObject(actual, expected, pollInterval, pollUnit);
+		// TaskObject task = new TaskObject(actual, expected, pollInterval,
+		// pollUnit);
+		Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+					try {
+						call = actual.call();
+					} catch (Exception e) {
+						logger.debug(e);
+					}
+					if (call.equals(expected)) {
+						return;
+					}
+					try {
+						Thread.sleep(pollUnit.toMillis(pollInterval));
+					} catch (InterruptedException e) {
+						logger.debug(e);
+					}
+				}
+
+			}
+
+		};
 		Future<?> future = executor.submit(task);
 		try {
 			future.get(timeout, unit);
@@ -60,25 +85,10 @@ public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAsser
 			throw new RuntimeException(e.getMessage());
 		} catch (TimeoutException e) {
 			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
-					timeout, unit.toString().toLowerCase(), expected, task.getCall()));
+					timeout, unit.toString().toLowerCase(), expected, call));
 		}
 		return myself;
 
 	}
-
-//	public S contains(Object... expected) {
-//
-//		TaskObjects task = new TaskObjects(actual, Arrays.asList(expected), pollInterval, pollUnit);
-//		Future<?> future = executor.submit(task);
-//		try {
-//			future.get(timeout, unit);
-//		} catch (InterruptedException | ExecutionException e) {
-//			throw new RuntimeException(e.getMessage());
-//		} catch (TimeoutException e) {
-//			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
-//					timeout, unit.toString().toLowerCase(), expected, task.getCall()));
-//		}
-//		return myself;
-//	}
 
 }

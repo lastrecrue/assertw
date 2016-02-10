@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
  */
 public class WaitAssertions {
 
-	public static WaitObjectAssert assertThat(final Callable<?> actual) {
+	public static WaitObjectAssert assertThat(final Callable<Object> actual) {
 		return new WaitObjectAssert(actual);
 	}
 

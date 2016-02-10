@@ -1,5 +1,6 @@
 package org.assertw.core.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.internal.ObjectArrays;
 
 /**
  * .
@@ -22,7 +25,7 @@ import org.assertj.core.api.AbstractAssert;
  * 
  */
 public abstract class AbstractObjectsWaitAssert<S extends AbstractObjectsWaitAssert<S>>
-		extends AbstractAssert<S, Callable<Collection<?>>> {
+		extends AbstractWaitAssert<S, Callable<Collection<?>>, Collection<?>> {
 
 	static final Logger logger = LogManager.getLogger(AbstractObjectsWaitAssert.class.getName());
 
@@ -56,8 +59,27 @@ public abstract class AbstractObjectsWaitAssert<S extends AbstractObjectsWaitAss
 
 	public S contains(Object... expected) {
 
-		List<Object> asList = Arrays.asList(expected);
-		TaskObjects task = new TaskObjects(actual, asList, pollInterval, pollUnit);
+		List<Object> expectedAsList = Arrays.asList(expected);
+		Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+
+					call();
+					if (call.containsAll(expectedAsList)) {
+						return;
+					}
+					try {
+						Thread.sleep(pollUnit.toMillis(pollInterval));
+					} catch (InterruptedException e) {
+						logger.debug(e);
+					}
+				}
+
+			}
+
+		};
 		Future<?> future = executor.submit(task);
 		try {
 			future.get(timeout, unit);
@@ -65,7 +87,48 @@ public abstract class AbstractObjectsWaitAssert<S extends AbstractObjectsWaitAss
 			throw new RuntimeException(e.getMessage());
 		} catch (TimeoutException e) {
 			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
-					timeout, unit.toString().toLowerCase(), asList, task.getCall()));
+					timeout, unit.toString().toLowerCase(), call, expectedAsList));
+		}
+		return myself;
+	}
+
+	public S containsOnly(Object... expected) {
+		List<Object> expectedAsList = Arrays.asList(expected);
+		Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+
+					call();
+					boolean out = true;
+					for (Object object : call) {
+						if (!expectedAsList.contains(object)) {
+							out = false;
+							break;
+						}
+					}
+					if (out) {
+						return;
+					}
+					try {
+						Thread.sleep(pollUnit.toMillis(pollInterval));
+					} catch (InterruptedException e) {
+						logger.debug(e);
+					}
+				}
+
+			}
+
+		};
+		Future<?> future = executor.submit(task);
+		try {
+			future.get(timeout, unit);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e.getMessage());
+		} catch (TimeoutException e) {
+			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
+					timeout, unit.toString().toLowerCase(), call, expectedAsList));
 		}
 		return myself;
 	}

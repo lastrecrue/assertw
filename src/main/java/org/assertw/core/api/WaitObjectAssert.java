@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
  */
 public class WaitObjectAssert extends AbstractObjectWaitAssert<WaitObjectAssert> {
 
-	protected WaitObjectAssert(Callable<?> actual) {
+	protected WaitObjectAssert(Callable<Object> actual) {
 		super(actual, WaitObjectAssert.class);
 	}
 }

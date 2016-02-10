@@ -13,4 +13,5 @@ public class WaitObjectsAssert extends AbstractObjectsWaitAssert<WaitObjectsAsse
 	protected WaitObjectsAssert(Callable<Collection<?>> actual) {
 		super(actual, WaitObjectsAssert.class);
 	}
+
 }
