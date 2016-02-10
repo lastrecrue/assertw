@@ -50,11 +50,11 @@ public abstract class AbstractWaitAssert<S extends AbstractWaitAssert<S>> extend
 			}
 			if (call.equals(expected)) {
 				return myself;
-			} else if (System.currentTimeMillis() - start > timeout * 1000) {
+			} else if (System.currentTimeMillis() - start > unit.toMillis(timeout)) {
 				throw new RuntimeException(String.format("time out %s.", timeout));
 			} else {
 				try {
-					Thread.sleep(pollInterval * 1000);
+					Thread.sleep(pollUnit.toMillis(pollInterval));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
