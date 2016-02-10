@@ -1,7 +1,6 @@
 package org.assertw.core.api;
 
 import java.util.Random;
-import java.util.concurrent.Callable;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -18,21 +17,12 @@ public class WaitAssertTest {
 
 	@Test
 	public void testBooleanTrue() {
-		Callable<?> actual = new Callable<Boolean>() {
-
-			@Override
-			public Boolean call() throws Exception {
-				// TODO Auto-generated method stub
-				return randBoolean();
-			}
-		};
-		;
-		WaitAssertions.assertThat(actual).atMost(5).isEqualTo(true);
+		WaitAssertions.assertThat(() -> randBoolean()).atMost(5).isEqualTo(true);
 	}
 
 	private boolean randBoolean() {
 		boolean nextBoolean = new Random().nextBoolean();
 		logger.debug(nextBoolean);
-		return false;
+		return nextBoolean;
 	}
 }
