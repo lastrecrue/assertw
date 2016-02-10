@@ -1,9 +1,20 @@
 package org.assertw.core.api;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.internal.Strings;
+
+import com.sun.javafx.binding.StringFormatter;
+import com.sun.xml.internal.ws.util.StringUtils;
 
 /**
  * .
@@ -13,11 +24,15 @@ import org.assertj.core.api.AbstractAssert;
  */
 public abstract class AbstractWaitAssert<S extends AbstractWaitAssert<S>> extends AbstractAssert<S, Callable<?>> {
 
+	static final Logger logger = LogManager.getLogger(AbstractWaitAssert.class.getName());
+
 	protected long timeout = 5;
 	protected TimeUnit unit = TimeUnit.SECONDS;
 
 	protected long pollInterval = 1;
 	protected TimeUnit pollUnit = TimeUnit.SECONDS;
+
+	private final ExecutorService executor = Executors.newFixedThreadPool(1);
 
 	protected AbstractWaitAssert(Callable<?> actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -40,27 +55,18 @@ public abstract class AbstractWaitAssert<S extends AbstractWaitAssert<S>> extend
 	}
 
 	public S isEqualTo(final Object expected) {
-		long start = System.currentTimeMillis();
-		while (true) {
-			Object call = null;
-			try {
-				call = actual.call();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (call.equals(expected)) {
-				return myself;
-			} else if (System.currentTimeMillis() - start > unit.toMillis(timeout)) {
-				throw new RuntimeException(String.format("time out %s.", timeout));
-			} else {
-				try {
-					Thread.sleep(pollUnit.toMillis(pollInterval));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-
+		Task task = new Task(actual, expected, pollInterval, pollUnit);
+		Future<?> future = executor.submit(task);
+		try {
+			future.get(timeout, unit);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e.getMessage());
+		} catch (TimeoutException e) {
+			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
+					timeout, unit.toString().toLowerCase(), expected, task.getCall()));
 		}
+		return myself;
+
 	}
 
 }
