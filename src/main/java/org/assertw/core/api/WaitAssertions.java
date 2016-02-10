@@ -1,5 +1,6 @@
 package org.assertw.core.api;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
@@ -9,8 +10,12 @@ import java.util.concurrent.Callable;
  */
 public class WaitAssertions {
 
-	public static AbstractWaitAssert<?> assertThat(final Callable<?> actual) {
-		return new WaitRunnableAssert(actual);
+	public static WaitObjectAssert assertThat(final Callable<?> actual) {
+		return new WaitObjectAssert(actual);
+	}
+
+	public static WaitObjectsAssert assertThats(final Callable<Collection<?>> actual) {
+		return new WaitObjectsAssert(actual);
 	}
 
 }
