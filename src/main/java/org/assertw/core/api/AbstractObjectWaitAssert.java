@@ -1,12 +1,7 @@
 package org.assertw.core.api;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -26,15 +21,7 @@ public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAsser
 
 	static final Logger logger = LogManager.getLogger(AbstractObjectWaitAssert.class.getName());
 
-	protected long timeout = 5;
-	protected TimeUnit unit = TimeUnit.SECONDS;
-
-	protected long pollInterval = 1;
-	protected TimeUnit pollUnit = TimeUnit.SECONDS;
-
 	private Object call;
-
-	private final ExecutorService executor = Executors.newFixedThreadPool(1);
 
 	public S atMost(long timeout) {
 		this.timeout = timeout;
@@ -53,42 +40,33 @@ public abstract class AbstractObjectWaitAssert<S extends AbstractObjectWaitAsser
 	}
 
 	public S isEqualTo(final Object expected) {
-		// TaskObject task = new TaskObject(actual, expected, pollInterval,
-		// pollUnit);
 		Runnable task = new Runnable() {
 
 			@Override
 			public void run() {
 				while (!Thread.interrupted()) {
-					try {
-						call = actual.call();
-					} catch (Exception e) {
-						logger.debug(e);
-					}
+					call();
 					if (call.equals(expected)) {
 						return;
 					}
-					try {
-						Thread.sleep(pollUnit.toMillis(pollInterval));
-					} catch (InterruptedException e) {
-						logger.debug(e);
-					}
+					pool();
 				}
 
 			}
 
 		};
-		Future<?> future = executor.submit(task);
-		try {
-			future.get(timeout, unit);
-		} catch (InterruptedException | ExecutionException e) {
-			throw new RuntimeException(e.getMessage());
-		} catch (TimeoutException e) {
-			throw new RuntimeException(String.format("timeout after %d %s : expected is <%s> but actuel is <%s>",
-					timeout, unit.toString().toLowerCase(), expected, call));
-		}
+		waitTest(expected, task);
 		return myself;
 
+	}
+
+	@Override
+	protected void call() {
+		try {
+			call = actual.call();
+		} catch (Exception e) {
+			logger.debug(e);
+		}
 	}
 
 }
